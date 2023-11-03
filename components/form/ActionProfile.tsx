@@ -19,6 +19,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ChangeEvent, useState } from "react";
+import {useUploadThing} from "@/lib/uploadthing"
+import { isBase64Image } from "@/lib/utils";
 
 interface Props{
     user:{
@@ -34,6 +36,7 @@ interface Props{
 
 const ActionProfile = ({user, btnTitle}: Props) => {
   const [files, setFiles] = useState<File[]>([]);
+  const {startUpload} = useUploadThing("media")
 
     const form = useForm({
         resolver: zodResolver(UserValidation),
@@ -45,10 +48,17 @@ const ActionProfile = ({user, btnTitle}: Props) => {
         }
     })
 
-    function onSubmit(values: z.infer<typeof UserValidation>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+    const onSubmit = async (values: z.infer<typeof UserValidation>) => {
+      const blob = values.profile_photo;
+  
+      const hasImageChanged = isBase64Image(blob);
+      if (hasImageChanged) {
+        const imgRes = await startUpload(files);
+  
+        if (imgRes && imgRes[0].fileUrl) {
+          values.profile_photo = imgRes[0].fileUrl;
+        }
+      }
     }
 
     const handleImage = (e: ChangeEvent<HTMLInputElement>, fieldChange : (value: string)=>void)=>{
@@ -59,7 +69,7 @@ const ActionProfile = ({user, btnTitle}: Props) => {
         if(e.target.files && e.target.files.length > 0 ){
           const file = e.target.files[0];
           setFiles(Array.from(e.target.files))
-          
+
 
         if(!file.type.includes("image")) return;
 

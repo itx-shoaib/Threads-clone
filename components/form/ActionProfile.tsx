@@ -55,8 +55,8 @@ const ActionProfile = ({user, btnTitle}: Props) => {
       if (hasImageChanged) {
         const imgRes = await startUpload(files);
   
-        if (imgRes && imgRes[0].fileUrl) {
-          values.profile_photo = imgRes[0].fileUrl;
+        if (imgRes && imgRes[0].url) {
+          values.profile_photo = imgRes[0].url;
         }
       }
     }
